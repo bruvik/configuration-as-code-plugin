@@ -141,6 +141,17 @@ public class ConfigurationAsCode extends ManagementLink {
         configure();
         response.sendRedirect("");
     }
+    
+    @RequirePOST
+    public void doAddSource(StaplerRequest request, StaplerResponse response) throws Exception {
+        if (!Jenkins.getInstance().hasPermission(Jenkins.ADMINISTER)) {
+            response.sendError(HttpServletResponse.SC_FORBIDDEN);
+            return;
+        }
+
+        LOGGER.log(Level.INFO, "adding source - but not really");
+        response.sendRedirect("");
+    }
 
     /**
      * Defaults to use a file in the current working directory with the name 'jenkins.yaml'

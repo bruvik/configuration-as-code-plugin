@@ -20,6 +20,14 @@
             <li>${source}</li>
           </j:forEach>
         </ul>
+        
+        <p>Add source</p>
+        <f:entry title="${%Source}" field="source">
+          <f:textbox default="${source}" />
+        </f:entry>
+        <f:form method="post" action="addSource" name="addSource">
+          <f:submit name="addSource" value="Add source"/>
+        </f:form>
 
         <p>Last time applied : <i:formatDate value="${it.lastTimeLoaded}" type="both" dateStyle="medium" timeStyle="long"/></p>
 
