@@ -21,24 +21,26 @@
           </j:forEach>
         </ul>
         
-        <p>Add source</p>
-        <f:entry title="${%Source}" field="source">
-          <f:textbox default="${source}" />
-        </f:entry>
-        <f:form method="post" action="addSource" name="addSource">
-          <f:submit name="addSource" value="Add source"/>
-        </f:form>
-
         <p>Last time applied : <i:formatDate value="${it.lastTimeLoaded}" type="both" dateStyle="medium" timeStyle="long"/></p>
+        
+        <f:form method="post" action="addSource" name="addSource">
+          <p>Add new source</p>
+          <f:entry title="${%Path or URL:}" field="newSource">
+            <f:textbox style="width:32em;"/>
+          </f:entry>
+          <f:bottomButtonBar>
+            <f:submit name="addSource" value="Add &amp; Reload"/>
+          </f:bottomButtonBar>
+        </f:form>
 
         <f:form method="post" action="reload" name="reload">
           <f:submit name="reload" value="Reload"/>
         </f:form>
 
       </j:otherwise>
-        <f:form method="post" action="export" name="export">
-          <f:submit name="export" value="Export Configuration"/>
-        </f:form>        
+      <f:form method="post" action="export" name="export">
+        <f:submit name="export" value="Export Configuration"/>
+      </f:form>        
     </j:choose>
 
 

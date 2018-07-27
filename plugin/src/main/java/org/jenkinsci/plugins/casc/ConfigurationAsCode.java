@@ -148,8 +148,9 @@ public class ConfigurationAsCode extends ManagementLink {
             response.sendError(HttpServletResponse.SC_FORBIDDEN);
             return;
         }
-
-        LOGGER.log(Level.INFO, "adding source - but not really");
+              
+        String newSource = request.getParameter("_.newSource");
+  
         response.sendRedirect("");
     }
 
