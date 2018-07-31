@@ -121,6 +121,8 @@ public class ConfigurationAsCode extends ManagementLink {
 
     private long lastTimeLoaded;
 
+    private String lastMessage;
+
     private List<String> sources = Collections.emptyList();
 
     public Date getLastTimeLoaded() {
@@ -130,6 +132,8 @@ public class ConfigurationAsCode extends ManagementLink {
     public List<String> getSources() {
         return sources;
     }
+
+    public String getLastMessage() { return lastMessage; }
 
     @RequirePOST
     public void doReload(StaplerRequest request, StaplerResponse response) throws Exception {
@@ -141,16 +145,25 @@ public class ConfigurationAsCode extends ManagementLink {
         configure();
         response.sendRedirect("");
     }
-    
+
     @RequirePOST
-    public void doAddSource(StaplerRequest request, StaplerResponse response) throws Exception {
+    public void doReplace(StaplerRequest request, StaplerResponse response) throws Exception {
         if (!Jenkins.getInstance().hasPermission(Jenkins.ADMINISTER)) {
             response.sendError(HttpServletResponse.SC_FORBIDDEN);
             return;
         }
-              
         String newSource = request.getParameter("_.newSource");
-  
+        File file = new File(newSource);
+        if (file.exists()) {
+            sources = Collections.singletonList(newSource);
+            //TODO: here should be dry run
+            configureWith(getConfigFromSources(getSources()));
+            lastMessage = "Applied configuration from " + newSource;
+        } else {
+            lastMessage = "YOU SHOULD PROVIDE CORRECT PATH";
+            configure();
+        }
+        LOGGER.log(Level.INFO, "adding source - but not really");
         response.sendRedirect("");
     }
 
