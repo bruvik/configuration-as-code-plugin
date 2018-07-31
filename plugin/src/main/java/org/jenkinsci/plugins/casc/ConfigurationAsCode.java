@@ -154,6 +154,21 @@ public class ConfigurationAsCode extends ManagementLink {
         response.sendRedirect("");
     }
 
+    private static List<YamlSource> getConfigFromSources(List<String> newSources) throws ConfiguratorException {
+        List<YamlSource> ret = new ArrayList<>();
+
+        for (String p : newSources) {
+            if (isSupportedURI(p)) {
+                ret.add(new YamlSource<>(p, YamlSource.READ_FROM_URL));
+            } else {
+                ret.addAll(configs(p).stream()
+                        .map(s -> new YamlSource<>(s, YamlSource.READ_FROM_PATH))
+                        .collect(toList()));
+            }
+        }
+        return ret;
+    }
+
     /**
      * Defaults to use a file in the current working directory with the name 'jenkins.yaml'
      *
@@ -176,19 +191,11 @@ public class ConfigurationAsCode extends ManagementLink {
     }
 
     private List<YamlSource> getStandardConfigSources() throws ConfiguratorException {
-        List<YamlSource> configs = new ArrayList<>();
-
-        for (String p : getStandardConfig()) {
-            if (isSupportedURI(p)) {
-                configs.add(new YamlSource<>(p, YamlSource.READ_FROM_URL));
-            } else {
-                configs.addAll(configs(p).stream()
-                        .map(s -> new YamlSource<>(s, YamlSource.READ_FROM_PATH))
-                        .collect(toList()));
-            }
-            sources = Collections.singletonList(p);
-        }
-        return configs;
+        List<String> standardConfig = getStandardConfig();
+        String last = standardConfig.get(standardConfig.size() - 1);
+        //TODO: remove this side effect from the getter
+        sources = Collections.singletonList(last);
+        return getConfigFromSources(standardConfig);
     }
 
     private List<String> getStandardConfig() {
@@ -466,7 +473,7 @@ public class ConfigurationAsCode extends ManagementLink {
      * @param path base path to start (can be file or directory)
      * @return list of all paths matching pattern. Only base file itself if it is a file matching pattern
      */
-    public List<Path> configs(String path) throws ConfiguratorException {
+    public static List<Path> configs(String path) throws ConfiguratorException {
         PathMatcher matcher = FileSystems.getDefault().getPathMatcher(YAML_FILES_PATTERN);
 
         try (Stream<Path> stream = Files.find(Paths.get(path), Integer.MAX_VALUE,
