@@ -29,7 +29,7 @@
             <f:textbox style="width:32em;"/>
           </f:entry>
           <f:bottomButtonBar>
-            <f:submit name="replace" value="Add &amp; Reload"/>
+            <f:submit name="replace" value="Add &amp; Replace"/>
           </f:bottomButtonBar>
         </f:form>
 

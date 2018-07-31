@@ -158,12 +158,12 @@ public class ConfigurationAsCode extends ManagementLink {
             sources = Collections.singletonList(newSource);
             //TODO: here should be dry run
             configureWith(getConfigFromSources(getSources()));
-            lastMessage = "Applied configuration from " + newSource;
+            lastMessage = "success";
         } else {
-            lastMessage = "YOU SHOULD PROVIDE CORRECT PATH";
+            lastMessage = "No such file exists";
             configure();
         }
-        LOGGER.log(Level.INFO, "adding source - but not really");
+        LOGGER.log(Level.INFO, "Replace configuration");
         response.sendRedirect("");
     }
 
