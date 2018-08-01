@@ -164,8 +164,9 @@ public class ConfigurationAsCode extends ManagementLink {
         response.sendRedirect("");
     }
 
-    public FormValidation doCheckNewSource(@QueryParameter String newSource) {
+    public FormValidation doCheckNewSource(@QueryParameter String newSource){
         LOGGER.log(Level.INFO, "Validation was called");
+        LOGGER.log(Level.INFO, "With value " + newSource); //TODO: remove, it's just for "debugging"
         File file = new File(newSource);
         if (!file.exists()) {
             return FormValidation.error("File does not exist");

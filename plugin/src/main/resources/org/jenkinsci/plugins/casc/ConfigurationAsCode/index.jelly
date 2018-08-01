@@ -32,7 +32,7 @@
       <f:form method="post" action="replace" name="replace">
         <p>Replace configuration with new source</p>
         <f:entry title="${%Path or URL:}" field="newSource">
-          <f:textbox style="width:32em;"/>
+          <f:textbox checkUrl="'checkNewSource?newSource='+this.value" style="width:32em;" />
         </f:entry>
         <f:bottomButtonBar>
           <f:submit name="replace" value="Add &amp; Replace"/>
