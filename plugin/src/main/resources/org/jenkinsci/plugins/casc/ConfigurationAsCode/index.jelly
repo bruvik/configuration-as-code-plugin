@@ -20,7 +20,7 @@
             <li>${source}</li>
           </j:forEach>
         </ul>
-        
+
         <p>Last time applied : <i:formatDate value="${it.lastTimeLoaded}" type="both" dateStyle="medium" timeStyle="long"/></p>
         
         <f:form method="post" action="replace" name="replace">

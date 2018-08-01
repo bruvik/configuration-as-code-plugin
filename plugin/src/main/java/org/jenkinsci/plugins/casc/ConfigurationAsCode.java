@@ -5,6 +5,7 @@ import hudson.Extension;
 import hudson.init.InitMilestone;
 import hudson.init.Initializer;
 import hudson.model.ManagementLink;
+import hudson.util.FormValidation;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -18,6 +19,7 @@ import org.jenkinsci.plugins.casc.yaml.YamlSource;
 import org.jenkinsci.plugins.casc.yaml.YamlUtils;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.interceptor.RequirePOST;
@@ -121,8 +123,6 @@ public class ConfigurationAsCode extends ManagementLink {
 
     private long lastTimeLoaded;
 
-    private String lastMessage;
-
     private List<String> sources = Collections.emptyList();
 
     public Date getLastTimeLoaded() {
@@ -132,8 +132,6 @@ public class ConfigurationAsCode extends ManagementLink {
     public List<String> getSources() {
         return sources;
     }
-
-    public String getLastMessage() { return lastMessage; }
 
     @RequirePOST
     public void doReload(StaplerRequest request, StaplerResponse response) throws Exception {
@@ -158,13 +156,21 @@ public class ConfigurationAsCode extends ManagementLink {
             sources = Collections.singletonList(newSource);
             //TODO: here should be dry run
             configureWith(getConfigFromSources(getSources()));
-            lastMessage = "success";
+            LOGGER.log(Level.INFO, "Replace configuration with: " + file.getAbsolutePath());
         } else {
-            lastMessage = "No such file exists";
+            LOGGER.log(Level.INFO, "There is no such source exist, applying default");
             configure();
         }
-        LOGGER.log(Level.INFO, "Replace configuration");
         response.sendRedirect("");
+    }
+
+    public FormValidation doCheckNewSource(@QueryParameter String newSource) {
+        LOGGER.log(Level.INFO, "Validation was called");
+        File file = new File(newSource);
+        if (!file.exists()) {
+            return FormValidation.error("File does not exist");
+        }
+        return FormValidation.ok();
     }
 
     private static List<YamlSource> getConfigFromSources(List<String> newSources) throws ConfiguratorException {
