@@ -2,6 +2,7 @@ package org.jenkinsci.plugins.casc;
 
 import com.google.common.annotations.VisibleForTesting;
 import hudson.Extension;
+import hudson.Util;
 import hudson.init.InitMilestone;
 import hudson.init.Initializer;
 import hudson.model.ManagementLink;
@@ -156,22 +157,24 @@ public class ConfigurationAsCode extends ManagementLink {
             sources = Collections.singletonList(newSource);
             //TODO: here should be dry run
             configureWith(getConfigFromSources(getSources()));
-            LOGGER.log(Level.INFO, "Replace configuration with: " + file.getAbsolutePath());
+            LOGGER.log(Level.FINE, "Replace configuration with: " + file.getAbsolutePath());
         } else {
-            LOGGER.log(Level.INFO, "There is no such source exist, applying default");
+            LOGGER.log(Level.FINE, "There is no such source exist, applying default");
             configure();
         }
         response.sendRedirect("");
     }
 
     public FormValidation doCheckNewSource(@QueryParameter String newSource){
-        LOGGER.log(Level.INFO, "Validation was called");
-        LOGGER.log(Level.INFO, "With value " + newSource); //TODO: remove, it's just for "debugging"
-        File file = new File(newSource);
-        if (!file.exists()) {
-            return FormValidation.error("File does not exist");
+        if (Util.fixEmptyAndTrim(newSource) == null) {
+            return FormValidation.okWithMarkup("Please add source");
         }
-        return FormValidation.ok();
+        File file = new File(newSource);
+        if (file.exists()) {
+            return FormValidation.ok();
+        }
+        // Can be a warning instead
+        return FormValidation.error("File does not exist");
     }
 
     private static List<YamlSource> getConfigFromSources(List<String> newSources) throws ConfiguratorException {
