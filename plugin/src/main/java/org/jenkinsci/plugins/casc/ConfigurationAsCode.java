@@ -166,15 +166,12 @@ public class ConfigurationAsCode extends ManagementLink {
     }
 
     public FormValidation doCheckNewSource(@QueryParameter String newSource){
-        if (Util.fixEmptyAndTrim(newSource) == null) {
-            return FormValidation.okWithMarkup("Please add source");
+        if (Util.fixEmptyAndTrim(newSource) != null && !new File(newSource).exists()) {
+            // Can be a warning instead
+            return FormValidation.error("File does not exist");
         }
-        File file = new File(newSource);
-        if (file.exists()) {
-            return FormValidation.ok();
-        }
-        // Can be a warning instead
-        return FormValidation.error("File does not exist");
+
+        return FormValidation.ok();
     }
 
     private static List<YamlSource> getConfigFromSources(List<String> newSources) throws ConfiguratorException {
