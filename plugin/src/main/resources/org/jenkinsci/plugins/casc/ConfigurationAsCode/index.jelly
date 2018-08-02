@@ -16,9 +16,17 @@
       <j:otherwise>
         Configuration loaded from :
         <ul>
-          <j:forEach var="source" items="${it.sources}">
-            <li>${source}</li>
-          </j:forEach>
+           <f:form method="post" action="replace" name="replace">
+                  <j:forEach var="source" items="${it.sources}">
+                    <f:entry title="${%Path or URL:}" field="newSource">
+                        <f:textbox value="${source}" checkUrl="'checkNewSource?newSource='+this.value" style="width:32em;" />
+                    </f:entry>
+                  </j:forEach>
+                  <f:bottomButtonBar>
+                    <f:submit name="replace" value="Replace"/>
+                  </f:bottomButtonBar>
+           </f:form>
+
         </ul>
 
         <p>Last time applied : <i:formatDate value="${it.lastTimeLoaded}" type="both" dateStyle="medium" timeStyle="long"/></p>
@@ -29,17 +37,6 @@
         
       </j:otherwise>
         
-      <f:form method="post" action="replace" name="replace">
-        <p>Replace configuration with new source</p>
-        <f:entry title="${%Path or URL:}" field="newSource">
-          <f:textbox checkUrl="'checkNewSource?newSource='+this.value" style="width:32em;" />
-        </f:entry>
-        <f:bottomButtonBar>
-          <f:submit name="replace" value="Add &amp; Replace"/>
-        </f:bottomButtonBar>
-      </f:form>
-
-      
       <f:form method="post" action="export" name="export">
         <f:submit name="export" value="Export Configuration"/>
       </f:form>        
