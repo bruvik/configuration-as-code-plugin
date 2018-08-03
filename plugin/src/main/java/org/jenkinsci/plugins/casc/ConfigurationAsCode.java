@@ -7,6 +7,7 @@ import hudson.init.InitMilestone;
 import hudson.init.Initializer;
 import hudson.model.ManagementLink;
 import hudson.util.FormValidation;
+import jenkins.model.GlobalConfiguration;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -43,7 +44,6 @@ import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
@@ -70,7 +70,6 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.logging.Level;
@@ -97,7 +96,6 @@ public class ConfigurationAsCode extends ManagementLink {
     public static final String CASC_JENKINS_CONFIG_ENV = "CASC_JENKINS_CONFIG";
     public static final String DEFAULT_JENKINS_YAML_PATH = "./jenkins.yaml";
     public static final String YAML_FILES_PATTERN = "glob:**.{yml,yaml,YAML,YML}";
-    public static final String CASC_PROPERTIES_FILENAME = "casc.properties";
 
     public static final Logger LOGGER = Logger.getLogger(ConfigurationAsCode.class.getName());
 
@@ -160,6 +158,10 @@ public class ConfigurationAsCode extends ManagementLink {
             sources = Collections.singletonList(newSource);
             //TODO: here should be dry run
             configureWith(getConfigFromSources(getSources()));
+            CasCGlobalConfig config = GlobalConfiguration.all().get(CasCGlobalConfig.class);
+            // TODO: check and clean, is it right place?
+            config.setConfigurationPath(newSource);
+            config.save();
             LOGGER.log(Level.FINE, "Replace configuration with: " + file.getAbsolutePath());
         } else {
             LOGGER.log(Level.FINE, "There is no such source exist, applying default");
@@ -223,20 +225,20 @@ public class ConfigurationAsCode extends ManagementLink {
 
     private List<String> getStandardConfig() {
         List<String> configParameters = getBundledCasCURIs();
+        CasCGlobalConfig casc = new CasCGlobalConfig();
+        String cascPath = casc.getConfigurationPath();
 
-        Properties cascProperties = loadProperties();
-        if (cascProperties != null && cascProperties.contains(CASC_JENKINS_CONFIG_PROPERTY)) {
-            configParameters.add(cascProperties.getProperty(CASC_JENKINS_CONFIG_PROPERTY));
-        }
-
-        if (!configParameters.isEmpty()) {
-            LOGGER.log(Level.FINE, "Located bundled config YAMLs: {0}", configParameters);
+        // Prioritization loaded files:
+        if (cascPath != null) {
+            configParameters.add(cascPath);
+            return configParameters;
         }
 
         String configParameter = System.getProperty(
                 CASC_JENKINS_CONFIG_PROPERTY,
                 System.getenv(CASC_JENKINS_CONFIG_ENV)
         );
+
         if (configParameter == null) {
             if (Files.exists(Paths.get(DEFAULT_JENKINS_YAML_PATH))) {
                 configParameter = DEFAULT_JENKINS_YAML_PATH;
@@ -251,25 +253,6 @@ public class ConfigurationAsCode extends ManagementLink {
             LOGGER.log(Level.FINE, "No configuration set nor default config file");
         }
         return configParameters;
-    }
-
-    private Properties loadProperties() {
-        File file = new File(Jenkins.getInstance().getRootDir().getAbsolutePath(), CASC_PROPERTIES_FILENAME);
-        
-        if (file.exists()) {
-            Properties properties = new Properties();
-            try {
-                FileInputStream fileInputStream = new FileInputStream(file);
-                properties.load(fileInputStream);
-                return properties;
-            } catch (IOException e) {
-                LOGGER.log(Level.SEVERE,
-                        "Unable to load casc properties file from %s",
-                        file.getAbsolutePath());
-            }
-        }
-
-        return null;
     }
 
     public List<String> getBundledCasCURIs() {
